@@ -6,7 +6,7 @@ export const useAuthStore = create(
     (set) => ({
       token: null,
       refreshToken: null,
-      tenant: 'demo',
+      tenant: import.meta.env.VITE_TENANT || 'demo',
       user: null,
       roles: [],
       tenantProfile: null,
