@@ -1,0 +1,386 @@
+@import url("https://fonts.googleapis.com/css2?family=Outfit:wght@100..900&display=swap") layer(base);
+
+@import "tailwindcss";
+
+@custom-variant dark (&:is(.dark *));
+
+@theme {
+  --font-*: initial;
+  --font-outfit: Outfit, sans-serif;
+  --font-inter: Inter, sans-serif;
+
+  --breakpoint-*: initial;
+  --breakpoint-2xsm: 375px;
+  --breakpoint-xsm: 425px;
+  --breakpoint-3xl: 2000px;
+  --breakpoint-sm: 640px;
+  --breakpoint-md: 768px;
+  --breakpoint-lg: 1024px;
+  --breakpoint-xl: 1280px;
+  --breakpoint-2xl: 1536px;
+
+  --text-title-2xl: 72px;
+  --text-title-2xl--line-height: 90px;
+  --text-title-xl: 60px;
+  --text-title-xl--line-height: 72px;
+  --text-title-lg: 48px;
+  --text-title-lg--line-height: 60px;
+  --text-title-md: 36px;
+  --text-title-md--line-height: 44px;
+  --text-title-sm: 30px;
+  --text-title-sm--line-height: 38px;
+  --text-theme-xl: 20px;
+  --text-theme-xl--line-height: 30px;
+  --text-theme-sm: 14px;
+  --text-theme-sm--line-height: 20px;
+  --text-theme-xs: 12px;
+  --text-theme-xs--line-height: 18px;
+
+  --color-current: currentColor;
+  --color-transparent: transparent;
+  --color-white: #ffffff;
+  --color-black: #1C2434;
+
+  /* ── TailAdmin brand / primary ─────────────────────────────────── */
+  --color-brand-25:  #f2f7ff;
+  --color-brand-50:  #ecf3ff;
+  --color-brand-100: #dde9ff;
+  --color-brand-200: #c2d6ff;
+  --color-brand-300: #9cb9ff;
+  --color-brand-400: #7592ff;
+  --color-brand-500: #3C50E0;
+  --color-brand-600: #3141c9;
+  --color-brand-700: #2a31d8;
+  --color-brand-800: #252dae;
+  --color-brand-900: #262e89;
+  --color-brand-950: #161950;
+
+  --color-blue-light-25:  #f5fbff;
+  --color-blue-light-50:  #f0f9ff;
+  --color-blue-light-100: #e0f2fe;
+  --color-blue-light-200: #b9e6fe;
+  --color-blue-light-300: #7cd4fd;
+  --color-blue-light-400: #36bffa;
+  --color-blue-light-500: #0ba5ec;
+  --color-blue-light-600: #0086c9;
+  --color-blue-light-700: #026aa2;
+  --color-blue-light-800: #065986;
+  --color-blue-light-900: #0b4a6f;
+  --color-blue-light-950: #062c41;
+
+  /* ── Gray scale ────────────────────────────────────────────────── */
+  --color-gray-25:   #fcfcfd;
+  --color-gray-50:   #F9FAFB;
+  --color-gray-100:  #F3F4F6;
+  --color-gray-200:  #E2E8F0;
+  --color-gray-300:  #d0d5dd;
+  --color-gray-400:  #98a2b3;
+  --color-gray-500:  #637381;
+  --color-gray-600:  #475467;
+  --color-gray-700:  #344054;
+  --color-gray-800:  #1d2939;
+  --color-gray-900:  #101828;
+  --color-gray-950:  #0c111d;
+  --color-gray-dark: #1C2434;
+
+  /* ── Status scales ─────────────────────────────────────────────── */
+  --color-success-25:  #f6fef9;
+  --color-success-50:  #ecfdf3;
+  --color-success-100: #d1fadf;
+  --color-success-200: #a6f4c5;
+  --color-success-300: #6ce9a6;
+  --color-success-400: #32d583;
+  --color-success-500: #219653;
+  --color-success-600: #039855;
+  --color-success-700: #027a48;
+  --color-success-800: #05603a;
+  --color-success-900: #054f31;
+  --color-success-950: #053321;
+
+  --color-error-25:  #fffbfa;
+  --color-error-50:  #fef3f2;
+  --color-error-100: #fee4e2;
+  --color-error-200: #fecdca;
+  --color-error-300: #fda29b;
+  --color-error-400: #f97066;
+  --color-error-500: #D34053;
+  --color-error-600: #d92d20;
+  --color-error-700: #b42318;
+  --color-error-800: #912018;
+  --color-error-900: #7a271a;
+  --color-error-950: #55160c;
+
+  --color-warning-25:  #fffcf5;
+  --color-warning-50:  #fffaeb;
+  --color-warning-100: #fef0c7;
+  --color-warning-200: #fedf89;
+  --color-warning-300: #fec84b;
+  --color-warning-400: #fdb022;
+  --color-warning-500: #FFBA00;
+  --color-warning-600: #dc6803;
+  --color-warning-700: #b54708;
+  --color-warning-800: #93370d;
+  --color-warning-900: #7a2e0e;
+  --color-warning-950: #4e1d09;
+
+  --color-orange-25:  #fffaf5;
+  --color-orange-50:  #fff6ed;
+  --color-orange-100: #ffead5;
+  --color-orange-200: #fddcab;
+  --color-orange-300: #feb273;
+  --color-orange-400: #fd853a;
+  --color-orange-500: #fb6514;
+  --color-orange-600: #ec4a0a;
+  --color-orange-700: #c4320a;
+  --color-orange-800: #9c2a10;
+  --color-orange-900: #7e2410;
+  --color-orange-950: #511c10;
+
+  --color-theme-pink-500:   #ee46bc;
+  --color-theme-purple-500: #7a5af8;
+
+  /* ── NexaERP semantic aliases (all existing pages use these) ─────── */
+  --color-primary:      #3C50E0;
+  --color-primary-dark: #3141c9;
+  --color-boxdark:      #1C2434;
+  --color-boxdark-2:    #313D4A;
+  --color-bodybg:       #EFF4FB;
+  --color-bodydark:     #637381;
+  --color-bodydark-1:   #DEE4EE;
+  --color-bodydark-2:   #8D98A5;
+  --color-stroke:       #E2E8F0;
+  --color-strokedark:   #2E3A47;
+  --color-meta-1:       #D34053;
+  --color-meta-2:       #EFF2F7;
+  --color-meta-3:       #219653;
+  --color-meta-5:       #259AE6;
+  --color-meta-6:       #FFBA00;
+  --color-meta-7:       #FF6766;
+  --color-meta-8:       #F0950C;
+  --color-meta-9:       #E5E7EB;
+  --color-graydark:     #333A48;
+  --color-gray-1:       #F9FAFB;
+  --color-gray-2:       #F3F4F6;
+  --color-whiter:       #F5F7FD;
+
+  /* ── Shadows ─────────────────────────────────────────────────────── */
+  --shadow-theme-md: 0px 4px 8px -2px rgba(16,24,40,.1), 0px 2px 4px -2px rgba(16,24,40,.06);
+  --shadow-theme-lg: 0px 12px 16px -4px rgba(16,24,40,.08), 0px 4px 6px -2px rgba(16,24,40,.03);
+  --shadow-theme-sm: 0px 1px 3px 0px rgba(16,24,40,.1), 0px 1px 2px 0px rgba(16,24,40,.06);
+  --shadow-theme-xs: 0px 1px 2px 0px rgba(16,24,40,.05);
+  --shadow-theme-xl: 0px 20px 24px -4px rgba(16,24,40,.08), 0px 8px 8px -4px rgba(16,24,40,.03);
+  --shadow-focus-ring: 0px 0px 0px 4px rgba(60,80,224,.12);
+  --shadow-default: 0 1px 3px rgba(0,0,0,.06), 0 1px 2px rgba(0,0,0,.04);
+
+  --z-index-1:      1;
+  --z-index-9:      9;
+  --z-index-99:     99;
+  --z-index-999:    999;
+  --z-index-9999:   9999;
+  --z-index-99999:  99999;
+  --z-index-999999: 999999;
+}
+
+/* ── Reset / base ──────────────────────────────────────────────────── */
+@layer base {
+  *, ::after, ::before, ::backdrop, ::file-selector-button {
+    border-color: var(--color-gray-200, currentColor);
+  }
+  button:not(:disabled), [role="button"]:not(:disabled) {
+    cursor: pointer;
+  }
+  body {
+    font-family: Outfit, Inter, system-ui, sans-serif;
+    background-color: #EFF4FB;
+    color: #333A48;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+  a { text-decoration: none; color: inherit; }
+  input, select, textarea { font-family: inherit; }
+}
+
+/* ── Scrollbar ─────────────────────────────────────────────────────── */
+::-webkit-scrollbar { width: 4px; height: 4px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: #CBD5E1; border-radius: 99px; }
+
+@utility no-scrollbar {
+  &::-webkit-scrollbar { display: none; }
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+@utility custom-scrollbar {
+  &::-webkit-scrollbar { @apply size-1.5; }
+  &::-webkit-scrollbar-track { @apply rounded-full; }
+  &::-webkit-scrollbar-thumb { @apply bg-gray-200 rounded-full; }
+}
+
+/* ── TailAdmin menu utilities ──────────────────────────────────────── */
+@utility menu-item {
+  @apply relative flex items-center w-full gap-3 px-3 py-2 font-medium rounded-lg text-theme-sm;
+}
+@utility menu-item-active {
+  @apply bg-brand-50 text-brand-500;
+}
+@utility menu-item-inactive {
+  @apply text-gray-700 hover:bg-gray-100;
+}
+@utility menu-item-icon {
+  @apply text-gray-500 group-hover:text-gray-700;
+}
+@utility menu-item-icon-active {
+  @apply text-brand-500;
+}
+@utility menu-item-icon-inactive {
+  @apply text-gray-500 group-hover:text-gray-700;
+}
+@utility menu-item-arrow {
+  @apply relative;
+}
+@utility menu-item-arrow-active {
+  @apply rotate-180 text-brand-500;
+}
+@utility menu-item-arrow-inactive {
+  @apply text-gray-500 group-hover:text-gray-700;
+}
+@utility menu-dropdown-item {
+  @apply relative flex items-center gap-3 rounded-lg px-3 py-2.5 text-theme-sm font-medium;
+}
+@utility menu-dropdown-item-active {
+  @apply bg-brand-50 text-brand-500;
+}
+@utility menu-dropdown-item-inactive {
+  @apply text-gray-700 hover:bg-gray-100;
+}
+
+/* ── Animations ────────────────────────────────────────────────────── */
+@keyframes fadeIn       { from { opacity: 0; }                to { opacity: 1; } }
+@keyframes slideUp      { from { transform: translateY(16px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+@keyframes slideInRight { from { transform: translateX(100%); }              to { transform: translateX(0); } }
+@keyframes spin         { to   { transform: rotate(360deg); } }
+
+/* ── Spinner ───────────────────────────────────────────────────────── */
+.spinner {
+  display: inline-block;
+  width: 20px; height: 20px;
+  border: 2.5px solid #E2E8F0;
+  border-top-color: #3C50E0;
+  border-radius: 50%;
+  animation: spin .7s linear infinite;
+}
+.spinner-lg { width: 40px; height: 40px; }
+
+/* ── Modal overlay ─────────────────────────────────────────────────── */
+.modal-overlay {
+  position: fixed; inset: 0;
+  background: rgba(0,0,0,.5);
+  z-index: 9999;
+  display: flex; align-items: center; justify-content: center;
+  padding: 16px;
+  animation: fadeIn .15s ease;
+}
+.modal-box {
+  background: #fff;
+  border-radius: 8px;
+  width: 100%; max-width: 560px;
+  max-height: 92vh; overflow-y: auto;
+  animation: slideUp .2s ease;
+  box-shadow: 0 20px 60px rgba(0,0,0,.2);
+}
+
+/* ── Shadow utility ────────────────────────────────────────────────── */
+.shadow-default { box-shadow: 0 1px 3px rgba(0,0,0,.06), 0 1px 2px rgba(0,0,0,.04); }
+
+/* ── Kanban ────────────────────────────────────────────────────────── */
+.kanban-board { display: flex; gap: 20px; overflow-x: auto; padding-bottom: 16px; }
+.kanban-col   { flex: 0 0 300px; min-height: 400px; }
+
+/* ── Org chart ─────────────────────────────────────────────────────── */
+.org-tree     { display: flex; flex-direction: column; align-items: center; }
+.org-node     { background: #fff; border: 1.5px solid #E2E8F0; border-radius: 8px; padding: 12px 20px; text-align: center; min-width: 160px; }
+.org-children { display: flex; gap: 40px; margin-top: 32px; position: relative; }
+.org-children::before { content:''; position:absolute; top:-16px; left:50%; transform:translateX(-50%); width:calc(100% - 80px); height:1px; background:#E2E8F0; }
+
+/* ── Attendance calendar ───────────────────────────────────────────── */
+.att-day {
+  aspect-ratio: 1;
+  border-radius: 6px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 11px; font-weight: 600;
+  border: 1.5px solid transparent;
+  transition: all .15s;
+  cursor: pointer;
+}
+.att-day:hover    { border-color: #3C50E0; }
+.att-day.present  { background: #DCFCE7; color: #166534; }
+.att-day.absent   { background: #FEE2E2; color: #991B1B; }
+.att-day.late     { background: #FEF9C3; color: #854D0E; }
+.att-day.half     { background: #DBEAFE; color: #1E40AF; }
+.att-day.on_leave { background: #EDE9FE; color: #5B21B6; }
+.att-day.holiday  { background: #D1FAE5; color: #065F46; }
+.att-day.week_off { background: #F3F4F6; color: #9CA3AF; }
+.att-day.today    { border-color: #3C50E0 !important; }
+.att-day.future   { opacity: .35; }
+
+/* ── Progress bar ──────────────────────────────────────────────────── */
+.progress-bar  { height: 8px; background: #F3F4F6; border-radius: 99px; overflow: hidden; }
+.progress-fill { height: 100%; border-radius: 99px; transition: width .4s ease; }
+
+/* ── Table ─────────────────────────────────────────────────────────── */
+.table-responsive { overflow-x: auto; }
+
+/* ── Tabs ──────────────────────────────────────────────────────────── */
+.tab-list { display: flex; border-bottom: 1.5px solid #E2E8F0; gap: 2px; }
+.tab-btn  {
+  padding: 8px 18px; font-size: 13px; font-weight: 500;
+  color: #637381; border-bottom: 2px solid transparent;
+  margin-bottom: -1.5px; transition: all .15s;
+}
+.tab-btn:hover  { color: #333A48; }
+.tab-btn.active { color: #3C50E0; border-bottom-color: #3C50E0; }
+
+/* ── Login ─────────────────────────────────────────────────────────── */
+.login-gradient {
+  background: linear-gradient(135deg, #1C2434 0%, #3141c9 50%, #1C2434 100%);
+}
+
+/* ── ApexCharts overrides ──────────────────────────────────────────── */
+.apexcharts-legend-text {
+  @apply !text-gray-700;
+}
+.apexcharts-text {
+  @apply !fill-gray-700;
+}
+.apexcharts-tooltip.apexcharts-theme-light {
+  @apply gap-1 !rounded-lg !border-gray-200 p-3 !shadow-theme-sm;
+}
+.apexcharts-tooltip-marker {
+  margin-right: 6px; height: 6px; width: 6px;
+}
+.apexcharts-legend-text {
+  @apply !pl-5 !text-gray-700;
+}
+.apexcharts-tooltip-series-group { @apply !p-0; }
+.apexcharts-tooltip-y-group      { @apply !p-0; }
+.apexcharts-tooltip-title        { @apply !mb-0 !border-b-0 !bg-transparent !p-0 !text-[10px] !leading-4 !text-gray-800; }
+.apexcharts-tooltip-text         { @apply !text-theme-xs !text-gray-700; }
+.apexcharts-tooltip-text-y-value { @apply !font-medium; }
+.apexcharts-gridline             { @apply !stroke-gray-100; }
+
+/* ── Print ─────────────────────────────────────────────────────────── */
+@media print {
+  .no-print { display: none !important; }
+  body      { background: #fff; }
+}
+
+/* ── Remove date picker browser UI ────────────────────────────────── */
+@layer utilities {
+  input[type="date"]::-webkit-inner-spin-button,
+  input[type="time"]::-webkit-inner-spin-button,
+  input[type="date"]::-webkit-calendar-picker-indicator,
+  input[type="time"]::-webkit-calendar-picker-indicator {
+    display: none;
+    -webkit-appearance: none;
+  }
+}
