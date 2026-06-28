@@ -7,7 +7,7 @@ import toast from 'react-hot-toast';
 export default function Login() {
   const navigate = useNavigate();
   const { login, setTenant } = useAuthStore();
-  const [form, setForm] = useState({ tenant: 'demo', email: '', password: '' });
+  const [form, setForm] = useState({ tenant: 'atmt', email: '', password: '' });
   const [loading, setLoading] = useState(false);
   const [showPass, setShowPass] = useState(false);
 
@@ -76,14 +76,6 @@ export default function Login() {
             <p className="text-sm text-bodydark mb-8">Access your ERP workspace.</p>
 
             <form onSubmit={handleSubmit} className="space-y-5">
-              <Field
-                label="Workspace / Tenant"
-                icon={<IconBuilding />}
-                type="text"
-                value={form.tenant}
-                onChange={set('tenant')}
-                placeholder="your-company"
-              />
               <Field
                 label="Employee ID / Email"
                 icon={<IconUser />}
