@@ -2,6 +2,8 @@ import { useState } from 'react';
 import { NavLink, useNavigate, useLocation } from 'react-router-dom';
 import { useAuthStore } from '../../store/authStore';
 
+const IS_PROD = !!import.meta.env.VITE_TENANT;
+
 const NAV_GROUPS = [
   {
     label: 'MAIN',
@@ -32,12 +34,14 @@ const NAV_GROUPS = [
   },
   {
     label: 'CUSTOMERS',
+    devOnly: true,
     items: [
       { to: '/customers', label: 'All Customers', icon: <IconUsers /> },
     ],
   },
   {
     label: 'AMC & SERVICE',
+    devOnly: true,
     items: [
       { to: '/amc/contracts', label: 'Contracts', icon: <IconDocument /> },
       { to: '/amc/visits', label: 'Scheduled Visits', icon: <IconCalendar /> },
@@ -56,6 +60,7 @@ const NAV_GROUPS = [
   },
   {
     label: 'OPERATIONS',
+    devOnly: true,
     items: [
       { to: '/ops/products', label: 'Product Master', icon: <IconBox /> },
       { to: '/ops/services', label: 'Service Master', icon: <IconBox /> },
@@ -66,6 +71,7 @@ const NAV_GROUPS = [
   },
   {
     label: 'REPORTS',
+    devOnly: true,
     items: [
       { to: '/reports/leads', label: 'Lead Reports', icon: <IconChart /> },
       { to: '/reports/sales-funnel', label: 'Sales Funnel', icon: <IconFunnel /> },
@@ -77,8 +83,8 @@ const NAV_GROUPS = [
     label: 'SETTINGS',
     items: [
       { to: '/settings/leads', label: 'Lead Settings', icon: <IconCog /> },
-      { to: '/settings/amc', label: 'AMC Settings', icon: <IconCog /> },
-      { to: '/settings/po', label: 'PO Settings', icon: <IconCog /> },
+      { to: '/settings/amc', label: 'AMC Settings', icon: <IconCog />, devOnly: true },
+      { to: '/settings/po', label: 'PO Settings', icon: <IconCog />, devOnly: true },
       { to: '/settings/document-series', label: 'Document Numbering', icon: <IconCog /> },
       { to: '/settings/gst-config', label: 'GST Tax Rates', icon: <IconCog /> },
       { to: '/settings/reminders', label: 'Lifecycle Reminders', icon: <IconCog /> },
@@ -155,13 +161,16 @@ export default function Sidebar({ sidebarOpen, setSidebarOpen }) {
 
         {/* Navigation */}
         <div className="no-scrollbar flex flex-col overflow-y-auto flex-1 py-4 px-3">
-          {NAV_GROUPS.map((group) => (
+          {NAV_GROUPS.filter(g => !(IS_PROD && g.devOnly)).map((group) => {
+            const visibleItems = group.items.filter(i => !(IS_PROD && i.devOnly));
+            if (!visibleItems.length) return null;
+            return (
             <div key={group.label} className="mb-4">
               <h3 className="mb-2 ml-3 text-[10px] font-semibold uppercase tracking-widest text-bodydark-2">
                 {group.label}
               </h3>
               <ul className="flex flex-col gap-0.5">
-                {group.items.map(({ to, label, icon, exact }) => (
+                {visibleItems.map(({ to, label, icon, exact }) => (
                   <li key={to}>
                     <NavLink
                       to={to}
@@ -181,7 +190,8 @@ export default function Sidebar({ sidebarOpen, setSidebarOpen }) {
                 ))}
               </ul>
             </div>
-          ))}
+            );
+          })}
         </div>
 
         {/* User footer */}
