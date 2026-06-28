@@ -6,7 +6,7 @@ export const useAuthStore = create(
     (set) => ({
       token: null,
       refreshToken: null,
-      tenant: 'demo',
+      tenant: 'atmt',
       user: null,
       roles: [],
       tenantProfile: null,
