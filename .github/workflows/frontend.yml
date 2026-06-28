@@ -29,3 +29,5 @@ jobs:
           context: .
           push: true
           tags: ghcr.io/${{ secrets.GHCR_USERNAME }}/bgderp-frontend:latest
+          build-args: |
+            VITE_TENANT=atmt

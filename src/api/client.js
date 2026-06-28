@@ -4,6 +4,7 @@ import { useAuthStore } from '../store/authStore';
 // In dev: Vite proxy forwards /auth and /hrm to localhost:8000
 // In production: set VITE_API_URL to your backend URL
 const BASE = import.meta.env.VITE_API_URL || '';
+const FIXED_TENANT = import.meta.env.VITE_TENANT || '';
 
 const api = axios.create({ baseURL: BASE });
 
@@ -11,7 +12,8 @@ const api = axios.create({ baseURL: BASE });
 api.interceptors.request.use((config) => {
   const { token, tenant } = useAuthStore.getState();
   if (token) config.headers.Authorization = `Bearer ${token}`;
-  if (tenant) config.headers['X-Tenant-Slug'] = tenant;
+  const effectiveTenant = FIXED_TENANT || tenant;
+  if (effectiveTenant) config.headers['X-Tenant-Slug'] = effectiveTenant;
   return config;
 });
 
@@ -26,7 +28,7 @@ api.interceptors.response.use(
       if (refreshToken) {
         try {
           const res = await axios.post(`${BASE}/auth/refresh`, { refresh_token: refreshToken }, {
-            headers: { 'X-Tenant-Slug': useAuthStore.getState().tenant },
+            headers: { 'X-Tenant-Slug': FIXED_TENANT || useAuthStore.getState().tenant },
           });
           setTokens(res.data.access_token, res.data.refresh_token);
           original.headers.Authorization = `Bearer ${res.data.access_token}`;
