@@ -90,21 +90,23 @@ export default function OfficeLocations() {
       }
       setModal(null);
       load();
-    } catch {
-      toast.error('Save failed');
+    } catch (err) {
+      const msg = err?.response?.data?.detail || 'Save failed';
+      toast.error(msg);
     } finally {
       setSaving(false);
     }
   };
 
   const handleDelete = async (b) => {
-    if (!window.confirm(`Deactivate "${b.name}"?`)) return;
+    if (!window.confirm(`Delete "${b.name}"? This cannot be undone.`)) return;
     try {
       await employeeApi.deleteBranch(b.id);
-      toast.success('Location deactivated');
+      toast.success('Location deleted');
       load();
-    } catch {
-      toast.error('Delete failed');
+    } catch (err) {
+      const msg = err?.response?.data?.detail || 'Delete failed';
+      toast.error(msg);
     }
   };
 
@@ -198,7 +200,7 @@ export default function OfficeLocations() {
                     onClick={() => handleDelete(b)}
                     className="rounded border border-stroke px-3 py-1.5 text-xs font-medium text-meta-1 hover:bg-red-50 transition-colors"
                   >
-                    Deactivate
+                    Delete
                   </button>
                 </div>
               </div>

@@ -1,7 +1,8 @@
 import { useState, useEffect } from 'react';
 import ReactApexChart from 'react-apexcharts';
 import { Link } from 'react-router-dom';
-import { employeeApi, leadsApi, amcApi, serviceApi, leaveApi, payrollApi } from '../api/client';
+import { employeeApi, leadsApi, amcApi, serviceApi, leaveApi, payrollApi, attendanceApi, noticeBoardApi } from '../api/client';
+import { useAuthStore } from '../store/authStore';
 
 const PRIORITY_COLOR = {
   high:   'bg-meta-1/10 text-meta-1',
@@ -44,6 +45,150 @@ const ATTENDANCE_SERIES = [
 ];
 
 export default function Dashboard() {
+  const { roles } = useAuthStore();
+  const isEmployee = roles?.length === 1 && roles[0] === 'Employee';
+  if (isEmployee) return <EmployeeDashboard />;
+  return <AdminDashboard />;
+}
+
+function EmployeeDashboard() {
+  const [todayAtt, setTodayAtt]     = useState(null);
+  const [summary, setSummary]       = useState(null);
+  const [balances, setBalances]     = useState([]);
+  const [notices, setNotices]       = useState([]);
+  const [loading, setLoading]       = useState(true);
+
+  useEffect(() => {
+    const now = new Date();
+    Promise.allSettled([
+      attendanceApi.today(),
+      attendanceApi.summary(now.getFullYear(), now.getMonth() + 1),
+      leaveApi.balance(),
+      noticeBoardApi.list(),
+    ]).then(([attR, sumR, balR, notR]) => {
+      if (attR.status === 'fulfilled') setTodayAtt(attR.value.data);
+      if (sumR.status === 'fulfilled') setSummary(sumR.value.data);
+      if (balR.status === 'fulfilled') {
+        const d = balR.value.data;
+        setBalances(Array.isArray(d) ? d : (d?.items ?? []));
+      }
+      if (notR.status === 'fulfilled') {
+        const d = notR.value.data;
+        setNotices((Array.isArray(d) ? d : (d?.items ?? [])).slice(0, 5));
+      }
+      setLoading(false);
+    });
+  }, []);
+
+  if (loading) {
+    return <div className="flex items-center justify-center h-64"><span className="spinner" /></div>;
+  }
+
+  const punchIn  = todayAtt?.punch_in  ? new Date(todayAtt.punch_in).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : null;
+  const punchOut = todayAtt?.punch_out ? new Date(todayAtt.punch_out).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : null;
+  const attStatus = todayAtt?.status ?? (punchIn ? 'present' : 'not_marked');
+
+  const STATUS_COLOR = {
+    present:    'bg-meta-3/10 text-meta-3',
+    absent:     'bg-meta-1/10 text-meta-1',
+    half_day:   'bg-meta-6/10 text-meta-6',
+    late:       'bg-meta-8/10 text-meta-8',
+    wfh:        'bg-primary/10 text-primary',
+    not_marked: 'bg-gray-100 text-gray-500',
+  };
+
+  return (
+    <div className="space-y-6">
+      {/* Today's Attendance */}
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
+        <div className="rounded-sm border border-stroke bg-white p-5 shadow-default">
+          <p className="text-xs text-bodydark uppercase tracking-widest mb-2">Today's Status</p>
+          <span className={`inline-flex rounded-full px-3 py-1 text-sm font-semibold capitalize ${STATUS_COLOR[attStatus] || STATUS_COLOR.not_marked}`}>
+            {attStatus.replace('_', ' ')}
+          </span>
+          <div className="mt-3 flex gap-6 text-sm text-bodydark">
+            <span>In: <strong className="text-black">{punchIn ?? '—'}</strong></span>
+            <span>Out: <strong className="text-black">{punchOut ?? '—'}</strong></span>
+          </div>
+        </div>
+
+        <div className="rounded-sm border border-stroke bg-white p-5 shadow-default">
+          <p className="text-xs text-bodydark uppercase tracking-widest mb-2">This Month</p>
+          <div className="flex gap-6 text-sm">
+            <div><div className="text-2xl font-bold text-meta-3">{summary?.present_days ?? '—'}</div><div className="text-xs text-bodydark">Present</div></div>
+            <div><div className="text-2xl font-bold text-meta-1">{summary?.absent_days ?? '—'}</div><div className="text-xs text-bodydark">Absent</div></div>
+            <div><div className="text-2xl font-bold text-meta-8">{summary?.late_days ?? '—'}</div><div className="text-xs text-bodydark">Late</div></div>
+          </div>
+        </div>
+
+        <div className="rounded-sm border border-stroke bg-white p-5 shadow-default">
+          <p className="text-xs text-bodydark uppercase tracking-widest mb-3">Leave Balances</p>
+          {balances.length === 0
+            ? <p className="text-sm text-bodydark">No leave data</p>
+            : <div className="space-y-2">
+                {balances.map((b) => {
+                  const used = parseFloat(b.used ?? 0);
+                  const alloc = parseFloat(b.allocated ?? b.balance ?? 0);
+                  const remaining = alloc - used;
+                  return (
+                    <div key={b.id ?? b.leave_type_id} className="flex items-center justify-between text-sm">
+                      <span className="text-black font-medium">{b.leave_type_name ?? b.code}</span>
+                      <span className="text-bodydark">{remaining} / {alloc} left</span>
+                    </div>
+                  );
+                })}
+              </div>
+          }
+        </div>
+      </div>
+
+      {/* Quick Links + Notices */}
+      <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+        <div className="rounded-sm border border-stroke bg-white shadow-default">
+          <div className="px-6 py-4 border-b border-stroke">
+            <h3 className="font-semibold text-black">Quick Actions</h3>
+          </div>
+          <div className="divide-y divide-stroke">
+            {[
+              { to: '/hrm/attendance', label: 'View My Attendance', desc: 'Punch in/out, monthly record' },
+              { to: '/hrm/leave', label: 'Apply for Leave', desc: 'Submit or track leave requests' },
+              { to: '/notice-board', label: 'Notice Board', desc: 'Company announcements' },
+            ].map(({ to, label, desc }) => (
+              <Link key={to} to={to} className="flex items-center justify-between px-6 py-4 hover:bg-gray-1 transition-colors">
+                <div>
+                  <p className="text-sm font-medium text-black">{label}</p>
+                  <p className="text-xs text-bodydark">{desc}</p>
+                </div>
+                <svg className="w-4 h-4 text-bodydark" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polyline points="9 18 15 12 9 6"/></svg>
+              </Link>
+            ))}
+          </div>
+        </div>
+
+        <div className="rounded-sm border border-stroke bg-white shadow-default">
+          <div className="px-6 py-4 border-b border-stroke">
+            <h3 className="font-semibold text-black">Recent Notices</h3>
+          </div>
+          {notices.length === 0
+            ? <div className="px-6 py-8 text-sm text-bodydark text-center">No notices</div>
+            : <div className="divide-y divide-stroke">
+                {notices.map((n, i) => (
+                  <div key={n.id ?? i} className="px-6 py-4">
+                    <p className="text-sm font-medium text-black">{n.title}</p>
+                    {n.created_at && (
+                      <p className="text-xs text-bodydark mt-0.5">{new Date(n.created_at).toLocaleDateString()}</p>
+                    )}
+                  </div>
+                ))}
+              </div>
+          }
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function AdminDashboard() {
   const [stats, setStats]             = useState(null);
   const [stageSeries, setStageSeries] = useState([]);
   const [stageLabels, setStageLabels] = useState([]);

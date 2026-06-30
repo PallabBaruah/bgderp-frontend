@@ -4,6 +4,41 @@ import { useAuthStore } from '../../store/authStore';
 
 const IS_PROD = !!import.meta.env.VITE_TENANT;
 
+// Nav shown to employees — filtered data, web is read-only for sales docs
+const EMPLOYEE_NAV_GROUPS = [
+  {
+    label: 'MAIN',
+    items: [
+      { to: '/', label: 'Dashboard', exact: true, icon: <IconDashboard /> },
+    ],
+  },
+  {
+    label: 'MY WORKSPACE',
+    items: [
+      { to: '/hrm/attendance', label: 'My Attendance', icon: <IconClock /> },
+      { to: '/hrm/leave', label: 'My Leave', icon: <IconCalendar /> },
+      { to: '/notice-board', label: 'Notice Board', icon: <IconMegaphone /> },
+    ],
+  },
+  {
+    label: 'MY LEADS',
+    items: [
+      { to: '/crm/leads', label: 'My Leads', icon: <IconUsers /> },
+      { to: '/crm/kanban', label: 'Pipeline', icon: <IconKanban /> },
+      { to: '/crm/follow-ups', label: 'Follow-ups', icon: <IconClock /> },
+    ],
+  },
+  {
+    label: 'MY SALES',
+    items: [
+      { to: '/sales/quotations', label: 'Quotations', icon: <IconDocument /> },
+      { to: '/sales/pi', label: 'Proforma Invoice', icon: <IconDocument /> },
+      { to: '/sales/invoices', label: 'Invoices', icon: <IconCart /> },
+      { to: '/sales/challans', label: 'Challans', icon: <IconBox /> },
+    ],
+  },
+];
+
 const NAV_GROUPS = [
   {
     label: 'MAIN',
@@ -105,6 +140,9 @@ export default function Sidebar({ sidebarOpen, setSidebarOpen }) {
   const location = useLocation();
   const [openGroups, setOpenGroups] = useState({});
 
+  const isEmployee = roles?.length === 1 && roles[0] === 'Employee';
+  const activeGroups = isEmployee ? EMPLOYEE_NAV_GROUPS : NAV_GROUPS;
+
   const toggleGroup = (label) =>
     setOpenGroups((p) => ({ ...p, [label]: !p[label] }));
 
@@ -161,7 +199,7 @@ export default function Sidebar({ sidebarOpen, setSidebarOpen }) {
 
         {/* Navigation */}
         <div className="no-scrollbar flex flex-col overflow-y-auto flex-1 py-4 px-3">
-          {NAV_GROUPS.filter(g => !(IS_PROD && g.devOnly)).map((group) => {
+          {activeGroups.filter(g => !(IS_PROD && g.devOnly)).map((group) => {
             const visibleItems = group.items.filter(i => !(IS_PROD && i.devOnly));
             if (!visibleItems.length) return null;
             return (

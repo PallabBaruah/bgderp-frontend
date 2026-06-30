@@ -4,7 +4,7 @@ import toast from 'react-hot-toast';
 import { employeeApi } from '../../api/client';
 
 const BLANK_FORM = {
-  full_name: '', email: '', phone: '', department_id: '', designation_id: '',
+  full_name: '', email: '', phone: '', department_id: '', designation_id: '', branch_id: '',
   date_of_joining: new Date().toISOString().split('T')[0], employment_type: 'permanent',
   profile: { gender: 'Male' },
 };
@@ -14,6 +14,7 @@ const normalize = (e) => ({
   emp_code:    e.employee_code ?? '',
   department:  e.department?.name ?? '',
   designation: e.designation?.name ?? '',
+  branch:      e.branch?.name ?? '',
   phone:       e.contact?.phone ?? e.phone ?? '',
   date_joined: e.date_of_joining ? String(e.date_of_joining) : '',
 });
@@ -23,6 +24,7 @@ export default function Employees() {
   const [total, setTotal]         = useState(0);
   const [depts, setDepts]         = useState([]);
   const [desigs, setDesigs]       = useState([]);
+  const [branches, setBranches]   = useState([]);
   const [loading, setLoading]     = useState(true);
   const [search, setSearch]       = useState('');
   const [deptFilter, setDeptFilter] = useState('');
@@ -36,6 +38,7 @@ export default function Employees() {
     loadEmployees();
     employeeApi.departments().then(r => setDepts(r.data ?? [])).catch(() => {});
     employeeApi.designations().then(r => setDesigs(r.data ?? [])).catch(() => {});
+    employeeApi.branches().then(r => setBranches(r.data ?? [])).catch(() => {});
   }, []);
 
   async function loadEmployees(params = {}) {
@@ -61,6 +64,7 @@ export default function Employees() {
     setForm({
       full_name: emp.full_name, email: emp.email, phone: emp.phone,
       department_id: emp.department_id || '', designation_id: emp.designation_id || '',
+      branch_id: emp.branch_id || '',
       date_of_joining: emp.date_joined || '', employment_type: emp.employment_type || 'permanent',
       profile: { gender: emp.profile?.gender || 'Male' },
     });
@@ -85,6 +89,7 @@ export default function Employees() {
         phone: form.phone || undefined,
         department_id: form.department_id || undefined,
         designation_id: form.designation_id || undefined,
+        branch_id: form.branch_id || undefined,
         date_of_joining: form.date_of_joining,
         employment_type: form.employment_type || 'permanent',
         profile: form.profile,
@@ -253,11 +258,20 @@ export default function Employees() {
               </div>
               <div className="grid grid-cols-2 gap-4">
                 <div>
+                  <label className="block text-xs font-medium text-bodydark mb-1.5">Branch / Office</label>
+                  <select value={form.branch_id} onChange={set('branch_id')} className="w-full rounded border border-stroke px-3 py-2 text-sm text-black outline-none focus:border-primary">
+                    <option value="">— Select —</option>
+                    {branches.filter(b => b.is_active).map(b => <option key={b.id} value={b.id}>{b.name}</option>)}
+                  </select>
+                </div>
+                <div>
                   <label className="block text-xs font-medium text-bodydark mb-1.5">Gender</label>
                   <select value={form.profile?.gender || 'Male'} onChange={setProfile('gender')} className="w-full rounded border border-stroke px-3 py-2 text-sm text-black outline-none focus:border-primary">
                     <option>Male</option><option>Female</option><option>Other</option>
                   </select>
                 </div>
+              </div>
+              <div className="grid grid-cols-2 gap-4">
                 <div>
                   <label className="block text-xs font-medium text-bodydark mb-1.5">Employment Type</label>
                   <select value={form.employment_type} onChange={set('employment_type')} className="w-full rounded border border-stroke px-3 py-2 text-sm text-black outline-none focus:border-primary">

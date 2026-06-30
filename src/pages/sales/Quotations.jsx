@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import toast from 'react-hot-toast';
 import { salesApi } from '../../api/client';
+import { useAuthStore } from '../../store/authStore';
 
 const STATUS_META = {
   draft:     { label: 'Draft',     cls: 'bg-bodydark/10 text-bodydark' },
@@ -18,6 +19,9 @@ function fmt(n) {
 
 export default function Quotations() {
   const navigate = useNavigate();
+  const { roles, user } = useAuthStore();
+  const isEmployee = roles?.length === 1 && roles[0] === 'Employee';
+
   const [items, setItems] = useState([]);
   const [total, setTotal] = useState(0);
   const [loading, setLoading] = useState(true);
@@ -29,7 +33,9 @@ export default function Quotations() {
   async function load() {
     setLoading(true);
     try {
-      const r = await salesApi.listQuotations({ status: status || undefined, search: search || undefined });
+      const params = { status: status || undefined, search: search || undefined };
+      if (isEmployee && user?.id) params.created_by = user.id;
+      const r = await salesApi.listQuotations(params);
       setItems(r.data?.results || []);
       setTotal(r.data?.total || 0);
     } catch { toast.error('Failed to load'); }
@@ -82,10 +88,12 @@ export default function Quotations() {
           <h1 className="text-xl font-bold text-black">Quotations</h1>
           <p className="text-sm text-bodydark">{total} total</p>
         </div>
-        <Link to="/sales/quotations/new"
-          className="rounded bg-primary px-5 py-2 text-sm font-medium text-white hover:bg-opacity-90">
-          + New Quotation
-        </Link>
+        {!isEmployee && (
+          <Link to="/sales/quotations/new"
+            className="rounded bg-primary px-5 py-2 text-sm font-medium text-white hover:bg-opacity-90">
+            + New Quotation
+          </Link>
+        )}
       </div>
 
       {/* Filters */}
@@ -155,23 +163,27 @@ export default function Quotations() {
                     </td>
                     <td className="px-4 py-3">
                       <div className="flex items-center gap-1 justify-center flex-wrap">
-                        <Link to={`/sales/quotations/${q.id}/edit`}
+                        <Link to={`/sales/quotations/${q.id}`}
                           className="rounded border border-stroke px-2.5 py-1 text-xs text-bodydark hover:text-black">
-                          Edit
+                          View
                         </Link>
-                        <button onClick={() => handleCopy(q.id, q.quote_no)}
-                          disabled={copying === q.id}
-                          title="Create a revision copy"
-                          className="rounded border border-warning/30 bg-warning/5 px-2.5 py-1 text-xs text-warning hover:bg-warning/10 disabled:opacity-50">
-                          Copy
-                        </button>
-                        <Link to={`/sales/quotations/${q.id}?tab=history`}
-                          className="rounded border border-bodydark/20 px-2.5 py-1 text-xs text-bodydark hover:text-black"
-                          title="Version history">
-                          History
-                        </Link>
-                        {!q.converted_to && q.status !== 'converted' && (
-                          <>
+                        {!isEmployee && (<>
+                          <Link to={`/sales/quotations/${q.id}/edit`}
+                            className="rounded border border-stroke px-2.5 py-1 text-xs text-bodydark hover:text-black">
+                            Edit
+                          </Link>
+                          <button onClick={() => handleCopy(q.id, q.quote_no)}
+                            disabled={copying === q.id}
+                            title="Create a revision copy"
+                            className="rounded border border-warning/30 bg-warning/5 px-2.5 py-1 text-xs text-warning hover:bg-warning/10 disabled:opacity-50">
+                            Copy
+                          </button>
+                          <Link to={`/sales/quotations/${q.id}?tab=history`}
+                            className="rounded border border-bodydark/20 px-2.5 py-1 text-xs text-bodydark hover:text-black"
+                            title="Version history">
+                            History
+                          </Link>
+                          {!q.converted_to && q.status !== 'converted' && (<>
                             <button onClick={() => handleConvert(q.id, 'pi')}
                               disabled={converting === q.id + 'pi'}
                               className="rounded border border-primary/30 bg-primary/5 px-2.5 py-1 text-xs text-primary hover:bg-primary/10 disabled:opacity-50">
@@ -182,12 +194,12 @@ export default function Quotations() {
                               className="rounded border border-meta-3/30 bg-meta-3/5 px-2.5 py-1 text-xs text-meta-3 hover:bg-meta-3/10 disabled:opacity-50">
                               → Invoice
                             </button>
-                          </>
-                        )}
-                        <button onClick={() => handleDelete(q.id)}
-                          className="rounded border border-danger/20 px-2.5 py-1 text-xs text-danger hover:bg-danger/5">
-                          Del
-                        </button>
+                          </>)}
+                          <button onClick={() => handleDelete(q.id)}
+                            className="rounded border border-danger/20 px-2.5 py-1 text-xs text-danger hover:bg-danger/5">
+                            Del
+                          </button>
+                        </>)}
                       </div>
                     </td>
                   </tr>

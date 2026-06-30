@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import toast from 'react-hot-toast';
 import { salesApi } from '../../api/client';
+import { useAuthStore } from '../../store/authStore';
 
 const STATUS_META = {
   draft:     { label: 'Draft',     cls: 'bg-bodydark/10 text-bodydark' },
@@ -15,6 +16,9 @@ function fmt(n) {
 }
 
 export default function ProformaInvoices() {
+  const { roles, user } = useAuthStore();
+  const isEmployee = roles?.length === 1 && roles[0] === 'Employee';
+
   const [items, setItems] = useState([]);
   const [total, setTotal] = useState(0);
   const [loading, setLoading] = useState(true);
@@ -25,7 +29,9 @@ export default function ProformaInvoices() {
   async function load() {
     setLoading(true);
     try {
-      const r = await salesApi.listPI({ status: status || undefined });
+      const params = { status: status || undefined };
+      if (isEmployee && user?.id) params.created_by = user.id;
+      const r = await salesApi.listPI(params);
       setItems(r.data?.results || []);
       setTotal(r.data?.total || 0);
     } catch { toast.error('Failed to load'); }
@@ -56,10 +62,12 @@ export default function ProformaInvoices() {
           <h1 className="text-xl font-bold text-black">Proforma Invoices</h1>
           <p className="text-sm text-bodydark">{total} total</p>
         </div>
-        <Link to="/sales/pi/new"
-          className="rounded bg-primary px-5 py-2 text-sm font-medium text-white hover:bg-opacity-90">
-          + New PI
-        </Link>
+        {!isEmployee && (
+          <Link to="/sales/pi/new"
+            className="rounded bg-primary px-5 py-2 text-sm font-medium text-white hover:bg-opacity-90">
+            + New PI
+          </Link>
+        )}
       </div>
 
       <div className="flex gap-3 mb-4">
@@ -112,17 +120,20 @@ export default function ProformaInvoices() {
                     </td>
                     <td className="px-4 py-3">
                       <div className="flex items-center gap-1 justify-center">
-                        <Link to={`/sales/pi/${p.id}/edit`}
-                          className="rounded border border-stroke px-2.5 py-1 text-xs text-bodydark hover:text-black">
-                          Edit
-                        </Link>
-                        {!p.converted_to_invoice_id && p.status !== 'converted' && (
-                          <button onClick={() => handleConvert(p.id)}
-                            disabled={converting === p.id}
-                            className="rounded border border-meta-3/30 bg-meta-3/5 px-2.5 py-1 text-xs text-meta-3 hover:bg-meta-3/10 disabled:opacity-50">
-                            → Invoice
-                          </button>
-                        )}
+                        {!isEmployee && (<>
+                          <Link to={`/sales/pi/${p.id}/edit`}
+                            className="rounded border border-stroke px-2.5 py-1 text-xs text-bodydark hover:text-black">
+                            Edit
+                          </Link>
+                          {!p.converted_to_invoice_id && p.status !== 'converted' && (
+                            <button onClick={() => handleConvert(p.id)}
+                              disabled={converting === p.id}
+                              className="rounded border border-meta-3/30 bg-meta-3/5 px-2.5 py-1 text-xs text-meta-3 hover:bg-meta-3/10 disabled:opacity-50">
+                              → Invoice
+                            </button>
+                          )}
+                        </>)}
+                        {isEmployee && <span className="text-xs text-bodydark">View only</span>}
                       </div>
                     </td>
                   </tr>

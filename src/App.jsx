@@ -75,6 +75,14 @@ import GSTConfig from './pages/settings/GSTConfig';
 import ReminderSettings from './pages/settings/ReminderSettings';
 import Settings from './pages/Settings';
 
+function EmployeeGuard({ children }) {
+  const { roles } = useAuthStore();
+  const isEmployee = roles?.length === 1 && roles[0] === 'Employee';
+  if (!isEmployee) return children;
+  // employees hit a restricted route → send home
+  return <Navigate to="/" replace />;
+}
+
 function AppLayout() {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   return (
@@ -86,16 +94,16 @@ function AppLayout() {
           <Routes>
             <Route path="/" element={<Dashboard />} />
 
-            {/* HRM */}
-            <Route path="/hrm/employees" element={<Employees />} />
-            <Route path="/hrm/employees/:id" element={<EmployeeDetail />} />
-            <Route path="/hrm/employees/org-chart" element={<OrgChart />} />
+            {/* HRM — attendance & leave open to all; rest employee-restricted */}
             <Route path="/hrm/attendance" element={<Attendance />} />
             <Route path="/hrm/leave" element={<LeaveManagement />} />
-            <Route path="/hrm/payroll" element={<Payroll />} />
-            <Route path="/hrm/payroll/:id" element={<PayrollDetail />} />
-            <Route path="/hrm/salary-config" element={<SalaryConfig />} />
             <Route path="/notice-board" element={<NoticeBoard />} />
+            <Route path="/hrm/employees" element={<EmployeeGuard><Employees /></EmployeeGuard>} />
+            <Route path="/hrm/employees/:id" element={<EmployeeGuard><EmployeeDetail /></EmployeeGuard>} />
+            <Route path="/hrm/employees/org-chart" element={<EmployeeGuard><OrgChart /></EmployeeGuard>} />
+            <Route path="/hrm/payroll" element={<EmployeeGuard><Payroll /></EmployeeGuard>} />
+            <Route path="/hrm/payroll/:id" element={<EmployeeGuard><PayrollDetail /></EmployeeGuard>} />
+            <Route path="/hrm/salary-config" element={<EmployeeGuard><SalaryConfig /></EmployeeGuard>} />
 
             {/* Legacy HRM routes → redirect */}
             <Route path="/employees" element={<Navigate to="/hrm/employees" replace />} />
@@ -103,7 +111,7 @@ function AppLayout() {
             <Route path="/leave" element={<Navigate to="/hrm/leave" replace />} />
             <Route path="/payroll" element={<Navigate to="/hrm/payroll" replace />} />
 
-            {/* CRM */}
+            {/* CRM — open to employees (pages self-filter) */}
             <Route path="/crm/dashboard" element={<LeadDashboard />} />
             <Route path="/crm/leads" element={<AllLeads />} />
             <Route path="/crm/leads/:id" element={<LeadDetail />} />
@@ -111,57 +119,57 @@ function AppLayout() {
             <Route path="/crm/follow-ups" element={<Followups />} />
             <Route path="/crm/activities" element={<Activities />} />
 
-            {/* Customers */}
-            <Route path="/customers" element={<Customers />} />
-            <Route path="/customers/:id" element={<CustomerDetail />} />
+            {/* Customers — employee-restricted (no employee-specific relation) */}
+            <Route path="/customers" element={<EmployeeGuard><Customers /></EmployeeGuard>} />
+            <Route path="/customers/:id" element={<EmployeeGuard><CustomerDetail /></EmployeeGuard>} />
 
-            {/* AMC */}
-            <Route path="/amc/contracts" element={<Contracts />} />
-            <Route path="/amc/contracts/:id" element={<ContractDetail />} />
-            <Route path="/amc/visits" element={<ScheduledVisits />} />
-            <Route path="/amc/tickets" element={<ServiceTickets />} />
-            <Route path="/amc/tickets/:id" element={<TicketDetail />} />
-            <Route path="/amc/renewals" element={<AMCRenewals />} />
+            {/* AMC — employee-restricted */}
+            <Route path="/amc/contracts" element={<EmployeeGuard><Contracts /></EmployeeGuard>} />
+            <Route path="/amc/contracts/:id" element={<EmployeeGuard><ContractDetail /></EmployeeGuard>} />
+            <Route path="/amc/visits" element={<EmployeeGuard><ScheduledVisits /></EmployeeGuard>} />
+            <Route path="/amc/tickets" element={<EmployeeGuard><ServiceTickets /></EmployeeGuard>} />
+            <Route path="/amc/tickets/:id" element={<EmployeeGuard><TicketDetail /></EmployeeGuard>} />
+            <Route path="/amc/renewals" element={<EmployeeGuard><AMCRenewals /></EmployeeGuard>} />
 
-            {/* Operations */}
-            <Route path="/ops/products" element={<Products />} />
-            <Route path="/ops/services" element={<Services />} />
-            <Route path="/ops/vendors" element={<Vendors />} />
-            <Route path="/ops/purchase-orders" element={<PurchaseOrders />} />
-            <Route path="/ops/purchase-orders/:id" element={<PODetail />} />
+            {/* Operations — employee-restricted */}
+            <Route path="/ops/products" element={<EmployeeGuard><Products /></EmployeeGuard>} />
+            <Route path="/ops/services" element={<EmployeeGuard><Services /></EmployeeGuard>} />
+            <Route path="/ops/vendors" element={<EmployeeGuard><Vendors /></EmployeeGuard>} />
+            <Route path="/ops/purchase-orders" element={<EmployeeGuard><PurchaseOrders /></EmployeeGuard>} />
+            <Route path="/ops/purchase-orders/:id" element={<EmployeeGuard><PODetail /></EmployeeGuard>} />
 
-            {/* Sales */}
+            {/* Sales — open to employees (pages self-filter; write actions hidden for employees) */}
             <Route path="/sales/quotations" element={<Quotations />} />
-            <Route path="/sales/quotations/new" element={<QuotationFormPage />} />
+            <Route path="/sales/quotations/new" element={<EmployeeGuard><QuotationFormPage /></EmployeeGuard>} />
             <Route path="/sales/quotations/:id" element={<QuotationFormPage />} />
-            <Route path="/sales/quotations/:id/edit" element={<QuotationFormPage />} />
+            <Route path="/sales/quotations/:id/edit" element={<EmployeeGuard><QuotationFormPage /></EmployeeGuard>} />
             <Route path="/sales/pi" element={<ProformaInvoices />} />
-            <Route path="/sales/pi/new" element={<PIFormPage />} />
-            <Route path="/sales/pi/:id/edit" element={<PIFormPage />} />
+            <Route path="/sales/pi/new" element={<EmployeeGuard><PIFormPage /></EmployeeGuard>} />
+            <Route path="/sales/pi/:id/edit" element={<EmployeeGuard><PIFormPage /></EmployeeGuard>} />
             <Route path="/sales/invoices" element={<SalesInvoices />} />
-            <Route path="/sales/invoices/new" element={<InvoiceFormPage />} />
+            <Route path="/sales/invoices/new" element={<EmployeeGuard><InvoiceFormPage /></EmployeeGuard>} />
             <Route path="/sales/invoices/:id" element={<InvoiceFormPage />} />
-            <Route path="/sales/invoices/:id/edit" element={<InvoiceFormPage />} />
+            <Route path="/sales/invoices/:id/edit" element={<EmployeeGuard><InvoiceFormPage /></EmployeeGuard>} />
             <Route path="/sales/challans" element={<DeliveryChallans />} />
-            <Route path="/sales/challans/new" element={<DocumentForm docType="challan" />} />
-            <Route path="/sales/inventory" element={<SalesInventory />} />
+            <Route path="/sales/challans/new" element={<EmployeeGuard><DocumentForm docType="challan" /></EmployeeGuard>} />
+            <Route path="/sales/inventory" element={<EmployeeGuard><SalesInventory /></EmployeeGuard>} />
 
-            {/* Reports */}
-            <Route path="/reports/leads" element={<LeadReports />} />
-            <Route path="/reports/sales-funnel" element={<SalesFunnel />} />
-            <Route path="/reports/amc" element={<AMCReports />} />
-            <Route path="/reports/inventory" element={<InventoryReports />} />
+            {/* Reports — employee-restricted */}
+            <Route path="/reports/leads" element={<EmployeeGuard><LeadReports /></EmployeeGuard>} />
+            <Route path="/reports/sales-funnel" element={<EmployeeGuard><SalesFunnel /></EmployeeGuard>} />
+            <Route path="/reports/amc" element={<EmployeeGuard><AMCReports /></EmployeeGuard>} />
+            <Route path="/reports/inventory" element={<EmployeeGuard><InventoryReports /></EmployeeGuard>} />
 
-            {/* Settings */}
-            <Route path="/settings" element={<Settings />} />
-            <Route path="/settings/leads" element={<LeadSettings />} />
-            <Route path="/settings/amc" element={<AMCSettings />} />
-            <Route path="/settings/po" element={<POSettings />} />
-            <Route path="/settings/organisation" element={<TenantConfig />} />
-            <Route path="/settings/office-locations" element={<OfficeLocations />} />
-            <Route path="/settings/document-series" element={<DocumentSeries />} />
-            <Route path="/settings/gst-config" element={<GSTConfig />} />
-            <Route path="/settings/reminders" element={<ReminderSettings />} />
+            {/* Settings — employee-restricted */}
+            <Route path="/settings" element={<EmployeeGuard><Settings /></EmployeeGuard>} />
+            <Route path="/settings/leads" element={<EmployeeGuard><LeadSettings /></EmployeeGuard>} />
+            <Route path="/settings/amc" element={<EmployeeGuard><AMCSettings /></EmployeeGuard>} />
+            <Route path="/settings/po" element={<EmployeeGuard><POSettings /></EmployeeGuard>} />
+            <Route path="/settings/organisation" element={<EmployeeGuard><TenantConfig /></EmployeeGuard>} />
+            <Route path="/settings/office-locations" element={<EmployeeGuard><OfficeLocations /></EmployeeGuard>} />
+            <Route path="/settings/document-series" element={<EmployeeGuard><DocumentSeries /></EmployeeGuard>} />
+            <Route path="/settings/gst-config" element={<EmployeeGuard><GSTConfig /></EmployeeGuard>} />
+            <Route path="/settings/reminders" element={<EmployeeGuard><ReminderSettings /></EmployeeGuard>} />
 
             <Route path="*" element={<Navigate to="/" replace />} />
           </Routes>

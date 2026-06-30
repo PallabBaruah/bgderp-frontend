@@ -73,6 +73,13 @@ export const employeeApi = {
   deleteDesig: (id) => api.delete(`/hrm/designations/${id}`),
   getSalaryConfig: (id) => api.get(`/hrm/employees/${id}/salary-config`),
   saveSalaryConfig: (id, data) => api.post(`/hrm/employees/${id}/salary-config`, data),
+  getDocuments: (id) => api.get(`/hrm/employees/${id}/documents`),
+  uploadDocument: (id, file, docType) => {
+    const fd = new FormData();
+    fd.append('file', file);
+    fd.append('doc_type', docType);
+    return api.post(`/hrm/employees/${id}/documents`, fd, { headers: { 'Content-Type': 'multipart/form-data' } });
+  },
 };
 
 // ── Attendance ─────────────────────────────────────────────────────────────
@@ -147,7 +154,7 @@ export const leadsApi = {
   update: (id, data) => api.patch(`/leads/${id}`, data),
   delete: (id) => api.delete(`/leads/${id}`),
   convert: (id, data) => api.post(`/leads/${id}/convert`, data),
-  kanban: () => api.get('/leads/kanban'),
+  kanban: (params) => api.get('/leads/kanban', { params }),
   activities: (id) => api.get(`/leads/${id}/activities`),
   addActivity: (id, data) => api.post(`/leads/${id}/activities`, data),
   updateActivity: (leadId, actId, data) => api.patch(`/leads/${leadId}/activities/${actId}`, data),

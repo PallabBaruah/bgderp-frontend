@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import toast from 'react-hot-toast';
 import { leadsApi } from '../../api/client';
+import { useAuthStore } from '../../store/authStore';
 
 const COLUMNS   = ['new', 'contacted', 'qualified', 'proposal', 'negotiation', 'won', 'lost'];
 // ATE DVR visit stage display labels
@@ -37,6 +38,9 @@ const cardify = (l) => ({
 });
 
 export default function KanbanPipeline() {
+  const { roles, user } = useAuthStore();
+  const isEmployee = roles?.length === 1 && roles[0] === 'Employee';
+
   const [cards, setCards]       = useState(Object.fromEntries(COLUMNS.map(c => [c, []])));
   const [loading, setLoading]   = useState(true);
   const [dragging, setDragging] = useState(null);
@@ -48,7 +52,8 @@ export default function KanbanPipeline() {
   async function load() {
     setLoading(true);
     try {
-      const res = await leadsApi.kanban();
+      const params = isEmployee && user?.id ? { assigned_to: user.id } : {};
+      const res = await leadsApi.kanban(params);
       const data = res.data ?? {};
       const mapped = {};
       COLUMNS.forEach(col => {
@@ -133,9 +138,9 @@ export default function KanbanPipeline() {
                 {colCards.map(card => (
                   <div
                     key={card.id}
-                    draggable
-                    onDragStart={() => onDragStart(col, card.id)}
-                    className={`rounded bg-white border border-stroke p-3 shadow-default cursor-grab active:cursor-grabbing transition-all hover:shadow-card ${dragging?.id === card.id ? 'opacity-50 scale-95' : ''} ${updating === card.id ? 'animate-pulse' : ''}`}
+                    draggable={!isEmployee}
+                    onDragStart={!isEmployee ? () => onDragStart(col, card.id) : undefined}
+                    className={`rounded bg-white border border-stroke p-3 shadow-default transition-all hover:shadow-card ${!isEmployee ? 'cursor-grab active:cursor-grabbing' : 'cursor-default'} ${dragging?.id === card.id ? 'opacity-50 scale-95' : ''} ${updating === card.id ? 'animate-pulse' : ''}`}
                   >
                     <div className="font-medium text-sm text-black mb-0.5">{card.company}</div>
                     <div className="text-xs text-bodydark mb-1.5">{card.contact}</div>

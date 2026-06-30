@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import toast from 'react-hot-toast';
 import { salesApi } from '../../api/client';
+import { useAuthStore } from '../../store/authStore';
 
 const STATUS_META = {
   draft:          { label: 'Draft',           cls: 'bg-bodydark/10 text-bodydark' },
@@ -73,6 +74,9 @@ function PaymentModal({ invoice, onClose, onSaved }) {
 }
 
 export default function SalesInvoices() {
+  const { roles, user } = useAuthStore();
+  const isEmployee = roles?.length === 1 && roles[0] === 'Employee';
+
   const [items, setItems] = useState([]);
   const [total, setTotal] = useState(0);
   const [loading, setLoading] = useState(true);
@@ -84,7 +88,9 @@ export default function SalesInvoices() {
   async function load() {
     setLoading(true);
     try {
-      const r = await salesApi.listInvoices({ status: status || undefined, search: search || undefined });
+      const params = { status: status || undefined, search: search || undefined };
+      if (isEmployee && user?.id) params.created_by = user.id;
+      const r = await salesApi.listInvoices(params);
       setItems(r.data?.results || []);
       setTotal(r.data?.total || 0);
     } catch { toast.error('Failed to load'); }
@@ -125,10 +131,12 @@ export default function SalesInvoices() {
           <h1 className="text-xl font-bold text-black">Sales Invoices</h1>
           <p className="text-sm text-bodydark">{total} total</p>
         </div>
-        <Link to="/sales/invoices/new"
-          className="rounded bg-primary px-5 py-2 text-sm font-medium text-white hover:bg-opacity-90">
-          + New Invoice
-        </Link>
+        {!isEmployee && (
+          <Link to="/sales/invoices/new"
+            className="rounded bg-primary px-5 py-2 text-sm font-medium text-white hover:bg-opacity-90">
+            + New Invoice
+          </Link>
+        )}
       </div>
 
       {/* Stats bar */}
@@ -219,22 +227,28 @@ export default function SalesInvoices() {
                     </td>
                     <td className="px-4 py-3">
                       <div className="flex items-center gap-1 justify-center flex-wrap">
-                        <Link to={`/sales/invoices/${inv.id}/edit`}
+                        <Link to={`/sales/invoices/${inv.id}`}
                           className="rounded border border-stroke px-2.5 py-1 text-xs text-bodydark hover:text-black">
-                          Edit
+                          View
                         </Link>
-                        {parseFloat(inv.balance_due) > 0 && inv.status !== 'cancelled' && (
-                          <button onClick={() => setPayModal(inv)}
-                            className="rounded border border-primary/30 bg-primary/5 px-2.5 py-1 text-xs text-primary hover:bg-primary/10">
-                            + Payment
+                        {!isEmployee && (<>
+                          <Link to={`/sales/invoices/${inv.id}/edit`}
+                            className="rounded border border-stroke px-2.5 py-1 text-xs text-bodydark hover:text-black">
+                            Edit
+                          </Link>
+                          {parseFloat(inv.balance_due) > 0 && inv.status !== 'cancelled' && (
+                            <button onClick={() => setPayModal(inv)}
+                              className="rounded border border-primary/30 bg-primary/5 px-2.5 py-1 text-xs text-primary hover:bg-primary/10">
+                              + Payment
+                            </button>
+                          )}
+                          <button
+                            onClick={() => createChallan(inv)}
+                            disabled={challanCreating === inv.id}
+                            className="rounded border border-warning/30 bg-warning/5 px-2.5 py-1 text-xs text-warning hover:bg-warning/10 disabled:opacity-50">
+                            → Challan
                           </button>
-                        )}
-                        <button
-                          onClick={() => createChallan(inv)}
-                          disabled={challanCreating === inv.id}
-                          className="rounded border border-warning/30 bg-warning/5 px-2.5 py-1 text-xs text-warning hover:bg-warning/10 disabled:opacity-50">
-                          → Challan
-                        </button>
+                        </>)}
                       </div>
                     </td>
                   </tr>

@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { leadsApi } from '../../api/client';
+import { useAuthStore } from '../../store/authStore';
 import toast from 'react-hot-toast';
 
 const PERIODS = [
@@ -29,6 +30,9 @@ const PRIORITY_COLOR = {
 };
 
 export default function Followups() {
+  const { roles, user } = useAuthStore();
+  const isEmployee = roles?.length === 1 && roles[0] === 'Employee';
+
   const [period, setPeriod]     = useState('today');
   const [items, setItems]       = useState([]);
   const [loading, setLoading]   = useState(true);
@@ -37,7 +41,9 @@ export default function Followups() {
   const load = async () => {
     setLoading(true);
     try {
-      const res = await leadsApi.followups({ period, include_done: showDone });
+      const params = { period, include_done: showDone };
+      if (isEmployee && user?.id) params.assigned_to = user.id;
+      const res = await leadsApi.followups(params);
       setItems(res.data?.results || []);
     } catch {
       toast.error('Failed to load follow-ups');
